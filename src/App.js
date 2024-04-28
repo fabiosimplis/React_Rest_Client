@@ -1,10 +1,18 @@
-import React from 'react';
+import React, {useState} from 'react';
 
-export default App;
+import './global.css'
 
-function App() {
+import Login from './pages/Login'
+
+export default function App() {
+  let [counter, setCouter] = useState(0);
+
+  function increment(){
+    setCouter(counter + 1);
+  }
+  
   return (
-    <h1>Hello World</h1>
+    <Login/>
   );
 }
 
