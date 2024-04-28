@@ -13,7 +13,8 @@ export default function Login({children}){
                     <h1>Access your Accout</h1>
                     <input placeholder="Username" />
                     <input type="password" placeholder="Password" />
-                    <button type="submit"/>
+                    
+                    <button className="button" type="submit">Login</button>
                 </form>
 
             </section>
