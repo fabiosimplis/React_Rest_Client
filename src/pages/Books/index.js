@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import { FiPower, FiEdit, FiTrash2 } from 'react-icons/fi'
 
@@ -16,16 +16,40 @@ export default function Books(){
 
     const navigate = useNavigate();
 
-    const headers = {
+    const headers = useMemo(() => ({
         Authorization: `Bearer ${accessToken}`
-    };
+    }), [accessToken]);
+
+    const params = useMemo(() => ({
+        page: 1,
+        size: 8,
+        direction: 'asc'
+    }), []);
+
+    async function logout() {
+
+        localStorage.clear();
+        navigate('/')
+    }
+
+    async function deleteBook(id) {
+
+        try {
+            await api.delete(`api/book/v1/${id}`, { headers, params });
+
+            setBooks(books.filter(book => book.id !== id))
+        } catch (error) {
+            alert('Delete failed! Try again.');
+        }
+    }
 
     useEffect(() => {
-        api.get('api/book/v1', { headers })
-        .then(response => {
-            setBooks(response.data._embedded.bookVOList)
-        })
-    })
+        api.get('api/book/v1', { headers, params }).then(response => {
+            setBooks(response.data._embedded.bookVOList);
+        }).catch(error => {
+            console.error('Erro ao obter os livros:', error);
+        });
+    }, [headers, params]); 
 
 
     return (
@@ -34,7 +58,7 @@ export default function Books(){
                 <img src={logo} alt="FJ" />
                 <span>Welcome, <strong>{username.toUpperCase()}</strong>! </span>
                 <Link className="button" to={{ pathname: '/book/new' }}> Add New Book</Link>
-                <button type="button">
+                <button onClick={logout} type="button">
                     <FiPower size={18} color="#251FC5"/>
                 </button>
             </header>
@@ -42,23 +66,23 @@ export default function Books(){
             <h1>Registred Books</h1>
             <ul>
                 {books.map(book => (
-                    <li>
-                    <strong>Title: </strong>
-                    <p>{book.title}</p>
-                    <strong>Author: </strong>
-                    <p>{book.author}</p>
-                    <strong>Price:</strong>
-                    <p>{Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'}).format(book.price)}</p>
-                    <strong>Release Date: </strong>
-                    <p>{Intl.DateTimeFormat('pt-BR').format(book.lauchDate)}</p>
+                    <li key={book.id}>
+                        <strong>Title: </strong>
+                        <p>{book.title}</p>
+                        <strong>Author: </strong>
+                        <p>{book.author}</p>
+                        <strong>Price:</strong>
+                        <p>{Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'}).format(book.price)}</p>
+                        <strong>Release Date: </strong>
+                        <p>{Intl.DateTimeFormat('pt-BR').format(book.lauchDate)}</p>
 
-                    <button type="button">
-                        <FiEdit size={20} color="#251FC5"/>
-                    </button>
-                    <button type="button">
-                        <FiTrash2 size={20} color="#251FC5"/>
-                    </button>
-                </li>
+                        <button type="button">
+                            <FiEdit size={20} color="#251FC5"/>
+                        </button>
+                        <button onClick={() => deleteBook(book.id)} type="button">
+                            <FiTrash2 size={20} color="#251FC5"/>
+                        </button>
+                    </li>
                 ))}
 
             </ul>
