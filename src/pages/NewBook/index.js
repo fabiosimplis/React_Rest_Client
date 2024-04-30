@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FiArrowLeft } from 'react-icons/fi'
 
 import api from '../../services/api'
@@ -15,6 +15,8 @@ export default function NewBook(){
     const [launchDate, setLaunchDate] = useState('');
     const [price, setPrice] = useState('');
     const [title, setTitle] = useState('');
+
+    const {bookId} = useParams();
 
     const accessToken = localStorage.getItem('accessToken');
 
@@ -35,10 +37,8 @@ export default function NewBook(){
         };
 
         try {
-            await api.post('api/book/v1', data, { headers });
-            
-            
-            navigate('/books')
+            await api.post('api/book/v1', data, { headers });            
+            navigate('/books');
         } catch (error) {
             alert('Error while recording Book! Try again!');
         }
@@ -49,7 +49,7 @@ export default function NewBook(){
                 <section className="form">
                     <img src={logo} alt="FJ" />
                     <h1>Add New Book</h1>
-                    <p>Enter the book information and click on 'Add'!</p>
+                    <p>Enter the book information and click on 'Add'! #### {bookId}</p>
                     <Link className="back-link" to={{ pathname: '/books' }}>
                         <FiArrowLeft size={16} color="#251FC5"/>
                         Home
