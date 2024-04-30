@@ -25,10 +25,14 @@ export default function Login({children}){
         try {
             const response = await api.post('auth/signin', data);
 
-            localStorage.setItem('username', username);
-            localStorage.setItem('accessToken', response.data.token);
-            
-            navigate('/books');
+            if (response && response.data && response.data.accessToken) {
+                localStorage.setItem('username', username);
+                localStorage.setItem('accessToken', response.data.accessToken);
+                navigate('/books');
+            } else {
+                console.error('Token not found in response:', response);
+                alert('Login failed! Token not found in response.');
+            }
         } catch (error) {
             alert('Login failed! Try again!');
         }
