@@ -10,7 +10,7 @@ export default function Books(){
         <div className="book-container">
             <header>
                 <img src={logo} alt="FJ" />
-                <span>Welcome, <strong>Name</strong>! </span>
+                <span>Welcome, <strong>{localStorage.getItem('username')}</strong>! </span>
                 <Link className="button" to={{ pathname: '/book/new' }}> Add New Book</Link>
                 <button type="button">
                     <FiPower size={18} color="#251FC5"/>
