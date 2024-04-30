@@ -29,7 +29,15 @@ export default function Books(){
     async function logout() {
 
         localStorage.clear();
-        navigate('/')
+        navigate('/');
+    }
+
+    async function editBook(id) {
+        try {
+            navigate(`/book/new/${id}`);
+        } catch (error) {
+            alert('Edit Failed! try again.');
+        }
     }
 
     async function deleteBook(id) {
@@ -57,7 +65,7 @@ export default function Books(){
             <header>
                 <img src={logo} alt="FJ" />
                 <span>Welcome, <strong>{username.toUpperCase()}</strong>! </span>
-                <Link className="button" to={{ pathname: '/book/new' }}> Add New Book</Link>
+                <Link className="button" to={{ pathname: '/book/new/0' }}> Add New Book</Link>
                 <button onClick={logout} type="button">
                     <FiPower size={18} color="#251FC5"/>
                 </button>
@@ -76,7 +84,7 @@ export default function Books(){
                         <strong>Release Date: </strong>
                         <p>{Intl.DateTimeFormat('pt-BR').format(book.lauchDate)}</p>
 
-                        <button type="button">
+                        <button onClick={() => editBook(book.id)} type="button">
                             <FiEdit size={20} color="#251FC5"/>
                         </button>
                         <button onClick={() => deleteBook(book.id)} type="button">

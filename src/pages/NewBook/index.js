@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useEffect, useState, useMemo } from "react";
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FiArrowLeft } from 'react-icons/fi'
 
 import api from '../../services/api'
@@ -10,35 +10,68 @@ import logo from '../../assets/fj.jpg'
 
 export default function NewBook(){
 
-    //const [id, setId] = useState(null);
+    const [id, setId] = useState(null);
     const [author, setAuthor] = useState('');
     const [launchDate, setLaunchDate] = useState('');
     const [price, setPrice] = useState('');
     const [title, setTitle] = useState('');
 
+    const {bookId} = useParams();
+
     const accessToken = localStorage.getItem('accessToken');
 
+    const data = {
+        title,
+        author,
+        launchDate,
+        price,
+    }
+
+    const headers = useMemo(() => ({
+        Authorization: `Bearer ${accessToken}`
+    }), [accessToken]);
+    
     const navigate = useNavigate();
 
-    async function createNewBook(event){
-        event.preventDefault();
+    useEffect(() => {
 
-        const data = {
-            title,
-            author,
-            launchDate,
-            price,
+        async function loadBook() {
+            try {
+                const response = await api.get(`api/book/v1/${bookId}`, {headers});
+                
+                let adjustDate = response.data.launchDate.split('T')[0];
+                
+                setId(response.data.id);
+                setTitle(response.data.title);
+                setAuthor(response.data.author);
+                setPrice(response.data.price);
+                setLaunchDate(adjustDate);
+    
+            } catch (error) {
+                alert('Error recovering Book! Try again!');
+                navigate('/books');
+            }
         }
 
-        const headers = {
-            Authorization: `Bearer ${accessToken}`
-        };
+        if (bookId === '0') {
+            return;
+        } else {
+            loadBook();
+        }
+    }, [bookId, headers, setId, setTitle, setAuthor, setPrice, setLaunchDate, navigate]);
+
+
+    async function saveOrUpdate(event){
+        event.preventDefault();
 
         try {
-            await api.post('api/book/v1', data, { headers });
-            
-            
-            navigate('/books')
+            if (bookId === '0') {
+                await api.post('api/book/v1', data, { headers });
+            } else {
+                data.id = id;
+                await api.put('api/book/v1', data, { headers });
+            }
+            navigate('/books');
         } catch (error) {
             alert('Error while recording Book! Try again!');
         }
@@ -48,14 +81,14 @@ export default function NewBook(){
             <div className="content">
                 <section className="form">
                     <img src={logo} alt="FJ" />
-                    <h1>Add New Book</h1>
-                    <p>Enter the book information and click on 'Add'!</p>
+                    <h1>{bookId === '0' ? 'Add New' : 'Update'}</h1>
+                    <p>Enter the book information and click on {bookId === '0' ? 'Add' : 'Update'}! # {bookId}</p>
                     <Link className="back-link" to={{ pathname: '/books' }}>
                         <FiArrowLeft size={16} color="#251FC5"/>
-                        Home
+                        Back to Book
                     </Link>
                 </section>
-                <form onSubmit={createNewBook}>
+                <form onSubmit={saveOrUpdate}>
                     <input
                         placeholder="Title" 
                         value={title}
@@ -77,7 +110,7 @@ export default function NewBook(){
                         onChange={event => setPrice(event.target.value)}
                     />
 
-                    <button className="button" type="submit">Add</button>
+                    <button className="button" type="submit">{bookId === '0' ? 'Add' : 'Update'}</button>
                 </form>
             </div>
         </div>
