@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import { FiPower, FiEdit, FiTrash2 } from 'react-icons/fi'
 
@@ -10,6 +10,7 @@ import logo from '../../assets/fj.jpg'
 export default function Books(){
     
     const [books, setBooks] = useState([]);
+    const [page, setPage] = useState(1);
 
     const username = localStorage.getItem('username');
     const accessToken = localStorage.getItem('accessToken');
@@ -21,10 +22,10 @@ export default function Books(){
     }), [accessToken]);
 
     const params = useMemo(() => ({
-        page: 1,
+        page: page,
         size: 8,
         direction: 'asc'
-    }), []);
+    }), [page]);
 
     async function logout() {
 
@@ -51,13 +52,16 @@ export default function Books(){
         }
     }
 
+    const fetchMoreBooks = useCallback(async () => {
+        const response = await api.get('api/book/v1', { headers, params });
+
+        setBooks([...books, ...response.data._embedded.bookVOList]);
+        setPage(page + 1);
+    }, [headers, params, setBooks, setPage, books, page]);
+
     useEffect(() => {
-        api.get('api/book/v1', { headers, params }).then(response => {
-            setBooks(response.data._embedded.bookVOList);
-        }).catch(error => {
-            console.error('Erro ao obter os livros:', error);
-        });
-    }, [headers, params]); 
+        fetchMoreBooks();
+    }, []); 
 
 
     return (
@@ -95,6 +99,7 @@ export default function Books(){
 
             </ul>
             
+            <button className="button" onClick={fetchMoreBooks} type="button">Load More</button>
         </div>
     );
 }
